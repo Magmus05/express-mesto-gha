@@ -5,14 +5,14 @@ function getUsers(req, res) {
   User.find({})
     .then((users) => {
       res.status(200);
-      users.forEach((user) => {
-        res.send({
+      res.send(users.map((user) => {
+        return {
           name: user.name,
           about: user.about,
           avatar: user.avatar,
           _id: user._id,
-        });
-      });
+        };
+      }));
     })
     .catch((err) => {
       const ERROR_CODE = 500;
