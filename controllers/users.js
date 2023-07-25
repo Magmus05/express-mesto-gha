@@ -69,35 +69,42 @@ function createUser(req, res) {
 }
 
 function updateUserProfile(req, res) {
-  User.findByIdAndUpdate(req.user._id, {
-    name: req.body.name,
-    about: req.body.about,
-  })
+  console.log(req.body.name);
+  if (req.body.name) {
+    if (req.body.name.length < 2 || req.body.name.length > 30) {
+      return res.status(ERROR_CODE_BAD_REQUEST).send({
+        message:
+          "Переданы некорректные данные при обновлении имени пользователя, оно должно быть длиной от 2 до 30 символов.",
+      });
+    }
+  }
+  if (req.body.about) {
+    if (req.body.about.length < 2 || req.body.about.length > 30) {
+      return res.status(ERROR_CODE_BAD_REQUEST).send({
+        message:
+          "Переданы некорректные данные при обновлении информации о  пользователе, оно должно быть длиной от 2 до 30 символов.",
+      });
+    }
+  }
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      name: req.body.name,
+      about: req.body.about,
+    },
+    { new: true }
+  )
     .then((user) => {
-      if (req.body.name.length < 2 || req.body.name.length > 30) {
-        return Promise.reject(res.status);
-      }
-      if (req.body.about.length < 2 || req.body.about.length > 30) {
-        return Promise.reject(res.status);
-      }
       const u = {
-        name: req.body.name,
-        about: req.body.about,
+        name: user.name,
+        about: user.about,
         avatar: user.avatar,
         _id: user._id,
       };
       res.status(SUCCESS).send(u);
     })
     .catch((err) => {
-      // console.log(err);
-      // console.log(err.name);
-      // console.log(err.code);
-      // console.log(err.kind);
-      // console.log(req.body.name.length);
-      if (err.name === "status")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: "Переданы некорректные данные при обновлении пользователя",
-        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
