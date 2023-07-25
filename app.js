@@ -18,6 +18,11 @@ app.use((req, res, next) => {
 });
 app.use("/users", routesUsers);
 app.use("/cards", routesCards);
+app.use("/", (req, res)=>{
+  res.status(404).send({
+    "message": "Не верный адрес",
+  });
+});
 
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
   useNewUrlParser: true,
