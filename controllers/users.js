@@ -39,9 +39,13 @@ function getUserByID(req, res) {
     })
     .catch((err) => {
       if (err.name === "TypeError")
-        return res.status(ERROR_CODE_NOT_FOUND).send({ "message": "Такой ID не существует" });
+        return res
+          .status(ERROR_CODE_NOT_FOUND)
+          .send({ message: "Такой ID не существует" });
       if (err.name === "CastError")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({ "message": "Не верный ID" });
+        return res
+          .status(ERROR_CODE_BAD_REQUEST)
+          .send({ message: "Не верный ID" });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
@@ -59,7 +63,7 @@ function createUser(req, res) {
     })
     .catch((err) => {
       res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": "Переданы некорректные данные при создании пользователя",
+        message: "Переданы некорректные данные при создании пользователя",
       });
     });
 }
@@ -70,7 +74,12 @@ function updateUserProfile(req, res) {
     about: req.body.about,
   })
     .then((user) => {
-      if(req.body.name.length<2 || req.body.name.length>30 || req.body.about.length<2 || req.body.about.length>30 ){return Promise.reject(res.status)}
+      if (req.body.name.length < 2 || req.body.name.length > 30) {
+        return Promise.reject(res.status);
+      }
+      if (req.body.about.length < 2 || req.body.about.length > 30) {
+        return Promise.reject(res.status);
+      }
       const u = {
         name: req.body.name,
         about: req.body.about,
@@ -85,17 +94,19 @@ function updateUserProfile(req, res) {
       // console.log(err.code);
       // console.log(err.kind);
       // console.log(req.body.name.length);
-      if(err.name === "status")
-      return res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": "Переданы некорректные данные при обновлении пользователя",
-      });
+      if (err.name === "status")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: "Переданы некорректные данные при обновлении пользователя",
+        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
 function updateUserAvatar(req, res) {
   User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar })
     .then((user) => {
-      if(!req.body.avatar){return Promise.reject(res.status)}
+      if (!req.body.avatar) {
+        return Promise.reject(res.status);
+      }
       console.log(req.body.avatar);
       const u = {
         name: req.body.name,
@@ -106,10 +117,10 @@ function updateUserAvatar(req, res) {
       res.status(200).send(u);
     })
     .catch((err) => {
-      if(err.name === "status")
-      return res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": "Переданы некорректные данные при обновлении аватара.",
-      });
+      if (err.name === "status")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: "Переданы некорректные данные при обновлении аватара.",
+        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }

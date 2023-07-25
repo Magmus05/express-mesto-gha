@@ -25,13 +25,13 @@ function createCard(req, res) {
 }
 
 function deleteCard(req, res) {
-  console.log(req.params.cardId);
   Card.findByIdAndRemove(req.params.cardId)
     .then((user) => {
-      if(!user) return res
-      .status(ERROR_CODE_BAD_REQUEST)
-      .send({ message: "id не найден." });
-      res.status(200).send(user)
+      if (!user)
+        return res
+          .status(ERROR_CODE_NOT_FOUND)
+          .send({ message: "id не найден." });
+      res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       console.log(err.name);
@@ -44,21 +44,23 @@ function deleteCard(req, res) {
 }
 
 function likeCard(req, res) {
-console.log(req.params.cardId);
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
     .then((user) => {
-      if(!user) return res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": "id карточки некорректный.",
-      })
-      console.log(res.message);
-      console.log(user);
-      res.status(201).send(user)
+      if (!user)
+        return res.status(ERROR_CODE_NOT_FOUND).send({
+          message: "id карточки не найден.",
+        });
+      res.status(CREATE).send(user);
     })
     .catch((err) => {
+      if (err.kind === "ObjectId")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: "id карточки некорректный.",
+        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
@@ -70,13 +72,18 @@ function dislikeCard(req, res) {
     { new: true }
   )
     .then((user) => {
-      if(!user) return res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": "id карточки некорректный.",
-      })
+      if (!user)
+        return res.status(ERROR_CODE_NOT_FOUND).send({
+          message: "id карточки не найден.",
+        });
       console.log(res.status);
-      res.status(SUCCESS).send(user)
+      res.status(SUCCESS).send(user);
     })
     .catch((err) => {
+      if (err.kind === "ObjectId")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: "id карточки некорректный.",
+        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
