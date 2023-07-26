@@ -1,7 +1,8 @@
 /* eslint-disable */
 const express = require("express");
 const mongoose = require("mongoose");
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_URL = "mongodb://127.0.0.1:27017/mestodb" } =
+  process.env;
 const app = express();
 const routesUsers = require("./routes/users");
 const routesCards = require("./routes/cards");
@@ -18,13 +19,13 @@ app.use((req, res, next) => {
 });
 app.use("/users", routesUsers);
 app.use("/cards", routesCards);
-app.use("/", (req, res)=>{
+app.use("/", (req, res) => {
   res.status(404).send({
-    "message": "Не верный адрес",
+    message: "Не верный адрес",
   });
 });
 
-mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
+mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: false,
 });

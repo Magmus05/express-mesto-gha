@@ -12,12 +12,7 @@ function getUsers(req, res) {
       res.status(SUCCESS);
       res.send(
         users.map((user) => {
-          return {
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-            _id: user._id,
-          };
+          return user;
         })
       );
     })
@@ -28,17 +23,12 @@ function getUsers(req, res) {
 
 function getUserByID(req, res) {
   User.findById(req.params.id)
+    .orFail(new Error("NotValidId"))
     .then((user) => {
-      const u = {
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      };
-      res.status(SUCCESS).send(u);
+      res.status(SUCCESS).send(user);
     })
     .catch((err) => {
-      if (err.name === "TypeError")
+      if (err.message === "NotValidId")
         return res
           .status(ERROR_CODE_NOT_FOUND)
           .send({ message: "Такой ID не существует" });
@@ -53,13 +43,7 @@ function getUserByID(req, res) {
 function createUser(req, res) {
   User.create({ ...req.body })
     .then((user) => {
-      const u = {
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      };
-      res.status(CREATE).send(u);
+      res.status(CREATE).send(user);
     })
     .catch((err) => {
       res.status(ERROR_CODE_BAD_REQUEST).send({
@@ -69,45 +53,27 @@ function createUser(req, res) {
 }
 
 function updateUserProfile(req, res) {
-  console.log(req.body.name);
-  if (req.body.name) {
-    if (req.body.name.length < 2 || req.body.name.length > 30) {
-      return res.status(ERROR_CODE_BAD_REQUEST).send({
-        message:
-          "Переданы некорректные данные при обновлении имени пользователя, оно должно быть длиной от 2 до 30 символов.",
-      });
-    }
-  }
-  if (req.body.about) {
-    if (req.body.about.length < 2 || req.body.about.length > 30) {
-      return res.status(ERROR_CODE_BAD_REQUEST).send({
-        message:
-          "Переданы некорректные данные при обновлении информации о  пользователе, оно должно быть длиной от 2 до 30 символов.",
-      });
-    }
-  }
 
   User.findByIdAndUpdate(
     req.user._id,
     {
-      name: req.body.name,
-      about: req.body.about,
+      "name": req.body.name,
+      "about": req.body.about,
     },
-    { new: true }
+    { new: true, runValidators: true }
   )
     .then((user) => {
-      const u = {
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      };
-      res.status(SUCCESS).send(u);
+      res.status(SUCCESS).send(user);
     })
     .catch((err) => {
+
+      if(err.name === "ValidationError") return res.status(ERROR_CODE_BAD_REQUEST).send({
+        "message": `${err.message}`
+      });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
+
 function updateUserAvatar(req, res) {
   User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar })
     .then((user) => {
@@ -115,18 +81,12 @@ function updateUserAvatar(req, res) {
         return Promise.reject(res.status);
       }
       console.log(req.body.avatar);
-      const u = {
-        name: req.body.name,
-        about: req.body.about,
-        avatar: req.body.avatar,
-        _id: user._id,
-      };
-      res.status(200).send(u);
+      res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.name === "status")
         return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: "Переданы некорректные данные при обновлении аватара.",
+          "message": "Переданы некорректные данные при обновлении аватара.",
         });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
