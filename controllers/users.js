@@ -53,12 +53,11 @@ function createUser(req, res) {
 }
 
 function updateUserProfile(req, res) {
-
   User.findByIdAndUpdate(
     req.user._id,
     {
-      "name": req.body.name,
-      "about": req.body.about,
+      name: req.body.name,
+      about: req.body.about,
     },
     { new: true, runValidators: true }
   )
@@ -66,27 +65,30 @@ function updateUserProfile(req, res) {
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
-
-      if(err.name === "ValidationError") return res.status(ERROR_CODE_BAD_REQUEST).send({
-        "message": `${err.message}`
-      });
+      if (err.name === "ValidationError")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: `${err.message}`,
+        });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
 
 function updateUserAvatar(req, res) {
-  User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar: req.body.avatar },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       if (!req.body.avatar) {
         return Promise.reject(res.status);
       }
-      console.log(req.body.avatar);
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.name === "status")
         return res.status(ERROR_CODE_BAD_REQUEST).send({
-          "message": "Переданы некорректные данные при обновлении аватара.",
+          message: "Переданы некорректные данные при обновлении аватара.",
         });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
