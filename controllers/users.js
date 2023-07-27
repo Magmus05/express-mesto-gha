@@ -91,9 +91,9 @@ function updateUserAvatar(req, res) {
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
-      if (err.name === "status")
+      if (err.name === "ValidationError")
         return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: "Переданы некорректные данные при обновлении аватара.",
+          message: `${err.message}`,
         });
       res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
