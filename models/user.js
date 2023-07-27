@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    required: true,
+    required: [true, 'Поле "avatar" должно быть заполнено'],
     validate: {
       validator: (v) => validator.isURL(v),
       message: "Некорректный URL",

@@ -46,9 +46,14 @@ function createUser(req, res) {
       res.status(CREATE).send(user);
     })
     .catch((err) => {
-      res.status(ERROR_CODE_BAD_REQUEST).send({
-        message: "Переданы некорректные данные при создании пользователя",
-      });
+      console.log(err.name);
+      console.log(err.message);
+
+      if (err.name === "ValidationError")
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: `${err.message}`,
+        });
+      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     });
 }
 
