@@ -1,12 +1,15 @@
 /* eslint-disable */
 const User = require("../models/user");
-const ERROR_CODE_BAD_REQUEST = 400;
-const ERROR_CODE_NOT_FOUND = 404;
-const ERROR_CODE_INTERNAL_SERVER_ERROR = 500;
+const bcrypt = require("bcrypt");
+const JWT = require("jsonwebtoken");
+const {
+  NOT_FOUND_ERROR,
+  BAD_REQUEST_ERROR,
+} = require("../errors/errors");
 const SUCCESS = 200;
 const CREATE = 201;
 
-function getUsers(req, res) {
+function getUsers(req, res, next) {
   User.find({})
     .then((users) => {
       res.status(SUCCESS);
@@ -16,48 +19,52 @@ function getUsers(req, res) {
         })
       );
     })
-    .catch((err) => {
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+    .catch(next);
 }
 
-function getUserByID(req, res) {
-  User.findById(req.params.id)
+function getUserByID(req, res, next) {
+  User.findById(req.user._id)
     .orFail(new Error("NotValidId"))
     .then((user) => {
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.message === "NotValidId")
-        return res
-          .status(ERROR_CODE_NOT_FOUND)
-          .send({ message: "Такой ID не существует" });
+        throw new NOT_FOUND_ERROR("Такой ID не существует");
+      // return res
+      //   .status(ERROR_CODE_NOT_FOUND)
+      //   .send({ message: "Такой ID не существует" });
       if (err.name === "CastError")
-        return res
-          .status(ERROR_CODE_BAD_REQUEST)
-          .send({ message: "Не верный ID" });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+        throw new BAD_REQUEST_ERROR("Не верный ID");
+      //   return res
+      //     .status(ERROR_CODE_BAD_REQUEST)
+      //     .send({ message: "Не верный ID111" });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    })
+    .catch(next);
 }
 
-function createUser(req, res) {
-  User.create({ ...req.body })
+async function createUser(req, res, next) {
+  const hash = await bcrypt.hash(req.body.password, 10);
+  //console.log(hash);
+  User.create({ ...req.body, password: hash })
     .then((user) => {
       res.status(CREATE).send(user);
     })
     .catch((err) => {
-      console.log(err.name);
-      console.log(err.message);
+      // console.log(err.name);
+      // console.log(err.message);
 
       if (err.name === "ValidationError")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: `${err.message}`,
-        });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: `${err.message}`,
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
 }
 
-function updateUserProfile(req, res) {
+function updateUserProfile(req, res, next) {
   User.findByIdAndUpdate(
     req.user._id,
     {
@@ -71,14 +78,15 @@ function updateUserProfile(req, res) {
     })
     .catch((err) => {
       if (err.name === "ValidationError")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: `${err.message}`,
-        });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: `${err.message}`,
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
 }
 
-function updateUserAvatar(req, res) {
+function updateUserAvatar(req, res, next) {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
@@ -92,11 +100,30 @@ function updateUserAvatar(req, res) {
     })
     .catch((err) => {
       if (err.name === "ValidationError")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: `${err.message}`,
-        });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: `${err.message}`,
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
+}
+
+async function login(req, res, next) {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // аутентификация успешна! пользователь в переменной user
+      const SECRET_KEY = "cibirkulimay";
+      const token = JWT.sign({ _id: user._id.valueOf() }, SECRET_KEY, {
+        expiresIn: "7d",
+      });
+      res.cookie("jwt", token);
+      return res
+        .status(SUCCESS)
+        .send({ message: "Авторизация прошла успешно" });
+    })
+    .catch(next);
+
 }
 
 module.exports = {
@@ -105,4 +132,5 @@ module.exports = {
   createUser,
   updateUserProfile,
   updateUserAvatar,
+  login,
 };

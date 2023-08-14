@@ -1,51 +1,61 @@
 /* eslint-disable */
 const Card = require("../models/card");
-const ERROR_CODE_BAD_REQUEST = 400;
-const ERROR_CODE_NOT_FOUND = 404;
-const ERROR_CODE_INTERNAL_SERVER_ERROR = 500;
+const {
+  NOT_FOUND_ERROR,
+  BAD_REQUEST_ERROR,
+} = require("../errors/errors");
 const SUCCESS = 200;
 const CREATE = 201;
 
-function getCards(req, res) {
+function getCards(req, res, next) {
   Card.find({})
     .then((cards) => res.status(SUCCESS).send(cards))
-    .catch((err) => {
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+    .catch(next);
 }
 
-function createCard(req, res) {
+function createCard(req, res, next) {
   Card.create({ ...req.body, owner: req.user._id })
     .then((user) => res.status(CREATE).send(user))
     .catch((err) => {
       if (err.name === "ValidationError")
-      return res.status(ERROR_CODE_BAD_REQUEST).send({
-        message: `${err.message}`,
-      });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: `${err.message}`,
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
 }
 
-function deleteCard(req, res) {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((user) => {
-      if (!user)
-        return res
-          .status(ERROR_CODE_NOT_FOUND)
-          .send({ message: "id не найден." });
-      res.status(SUCCESS).send(user);
-    })
-    .catch((err) => {
-      console.log(err.name);
-      if (err.name === "CastError")
-        return res
-          .status(ERROR_CODE_BAD_REQUEST)
-          .send({ message: "Некорректный id." });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+function deleteCard(req, res, next) {
+  Card.findById(req.params.cardId).then((card) => {
+    if (card.owner !== req.body._id)
+    throw new BAD_REQUEST_ERROR("У вас нет прав удалять чужие карточки");
+      // return res
+      //   .status(ERROR_CODE_BAD_REQUEST)
+      //   .send({ message: "У вас нет прав удалять чужие карточки" });
+
+        Card.findByIdAndRemove(req.params.cardId)
+        .then((card) => {
+          if (!card)
+          throw new NOT_FOUND_ERROR("id не найден.");
+            // return res
+            //   .status(ERROR_CODE_NOT_FOUND)
+            //   .send({ message: "id не найден." });
+          res.status(SUCCESS).send(card);
+        })
+        .catch((err) => {
+          if (err.name === "CastError")
+          throw new BAD_REQUEST_ERROR("Некорректный id.");
+          //   return res
+          //     .status(ERROR_CODE_BAD_REQUEST)
+          //     .send({ message: "Некорректный id." });
+          // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+        }).catch(next);
+  });
+
 }
 
-function likeCard(req, res) {
+function likeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -53,21 +63,23 @@ function likeCard(req, res) {
   )
     .then((user) => {
       if (!user)
-        return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: "id карточки не найден.",
-        });
+      throw new NOT_FOUND_ERROR("id карточки не найден.");
+        // return res.status(ERROR_CODE_NOT_FOUND).send({
+        //   message: "id карточки не найден.",
+        // });
       res.status(CREATE).send(user);
     })
     .catch((err) => {
       if (err.kind === "ObjectId")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: "id карточки некорректный.",
-        });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR("id карточки некорректный.");
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: "id карточки некорректный.",
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
 }
 
-function dislikeCard(req, res) {
+function dislikeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -75,19 +87,21 @@ function dislikeCard(req, res) {
   )
     .then((user) => {
       if (!user)
-        return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: "id карточки не найден.",
-        });
-      console.log(res.status);
+      throw new NOT_FOUND_ERROR("id карточки не найден.");
+      //   return res.status(ERROR_CODE_NOT_FOUND).send({
+      //     message: "id карточки не найден.",
+      //   });
+      // console.log(res.status);
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.kind === "ObjectId")
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: "id карточки некорректный.",
-        });
-      res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    });
+      throw new BAD_REQUEST_ERROR("id карточки некорректный.");
+      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+      //     message: "id карточки некорректный.",
+      //   });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    }).catch(next);
 }
 
 module.exports = {
