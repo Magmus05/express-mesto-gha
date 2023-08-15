@@ -17,6 +17,12 @@ class BAD_REQUEST_ERROR  extends Error {
     this.statusCode = 400;
   }
 }
+class CONFLICT_ERROR  extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 409;
+  }
+}
 
 
-module.exports = {NOT_FOUND_ERROR, UNAUTHORIZED_ERROR, BAD_REQUEST_ERROR};
+module.exports = {NOT_FOUND_ERROR, UNAUTHORIZED_ERROR, BAD_REQUEST_ERROR, CONFLICT_ERROR};

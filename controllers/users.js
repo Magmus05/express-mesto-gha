@@ -2,10 +2,7 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
-const {
-  NOT_FOUND_ERROR,
-  BAD_REQUEST_ERROR,
-} = require("../errors/errors");
+const { NOT_FOUND_ERROR, BAD_REQUEST_ERROR, CONFLICT_ERROR } = require("../errors/errors");
 const SUCCESS = 200;
 const CREATE = 201;
 
@@ -21,7 +18,10 @@ function getUsers(req, res, next) {
         })
       );
     })
-    .catch((err) => {throw new BAD_REQUEST_ERROR(`${err.message}`)}).catch(next);
+    .catch((err) => {
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+    })
+    .catch(next);
 }
 
 function getUserByID(req, res, next) {
@@ -36,8 +36,7 @@ function getUserByID(req, res, next) {
       // return res
       //   .status(ERROR_CODE_NOT_FOUND)
       //   .send({ message: "Такой ID не существует" });
-      if (err.name === "CastError")
-        throw new BAD_REQUEST_ERROR("Не верный ID");
+      if (err.name === "CastError") throw new BAD_REQUEST_ERROR("Не верный ID");
       //   return res
       //     .status(ERROR_CODE_BAD_REQUEST)
       //     .send({ message: "Не верный ID111" });
@@ -46,24 +45,36 @@ function getUserByID(req, res, next) {
     .catch(next);
 }
 
-async function createUser(req, res, next) {
-  const hash = await bcrypt.hash(req.body.password, 10);
-  //console.log(hash);
-  User.create({ ...req.body, password: hash })
+function createUser(req, res, next) {
+  console.log(req.body.email);
+  User.findOne({ email: req.body.email })
     .then((user) => {
-      res.status(CREATE).send(user);
-    })
-    .catch((err) => {
-      // console.log(err.name);
-      // console.log(err.message);
+      if (user) {
+        throw new CONFLICT_ERROR(
+          `Пользователь с таким email уже существует`
+        );
+      } else {
+        bcrypt.hash(req.body.password, 10).then((hash) => {
+          User.create({ ...req.body, password: hash })
+            .then((user) => {
+              res.status(CREATE).send(user);
+            })
+            .catch((err) => {
+              // console.log(err.name);
+              // console.log(err.message);
 
-      if (err.name === "ValidationError")
-      throw new BAD_REQUEST_ERROR(`${err.message}`);
-      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
-      //     message: `${err.message}`,
-      //   });
-      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    }).catch(next);
+              if (err.name === "ValidationError")
+                throw new BAD_REQUEST_ERROR(`${err.message}`);
+              //   return res.status(ERROR_CODE_BAD_REQUEST).send({
+              //     message: `${err.message}`,
+              //   });
+              // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+            })
+            .catch(next);
+        });
+      }
+    })
+    .catch(next);
 }
 
 function updateUserProfile(req, res, next) {
@@ -80,12 +91,13 @@ function updateUserProfile(req, res, next) {
     })
     .catch((err) => {
       if (err.name === "ValidationError")
-      throw new BAD_REQUEST_ERROR(`${err.message}`);
+        throw new BAD_REQUEST_ERROR(`${err.message}`);
       //   return res.status(ERROR_CODE_BAD_REQUEST).send({
       //     message: `${err.message}`,
       //   });
       // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    }).catch(next);
+    })
+    .catch(next);
 }
 
 function updateUserAvatar(req, res, next) {
@@ -102,12 +114,13 @@ function updateUserAvatar(req, res, next) {
     })
     .catch((err) => {
       if (err.name === "ValidationError")
-      throw new BAD_REQUEST_ERROR(`${err.message}`);
+        throw new BAD_REQUEST_ERROR(`${err.message}`);
       //   return res.status(ERROR_CODE_BAD_REQUEST).send({
       //     message: `${err.message}`,
       //   });
       // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    }).catch(next);
+    })
+    .catch(next);
 }
 
 async function login(req, res, next) {
@@ -127,8 +140,10 @@ async function login(req, res, next) {
         .status(SUCCESS)
         .send({ message: "Авторизация прошла успешно" });
     })
-    .catch((err) => {throw new BAD_REQUEST_ERROR(`${err.message}`)}).catch(next);
-
+    .catch((err) => {
+      throw new BAD_REQUEST_ERROR(`${err.message}`);
+    })
+    .catch(next);
 }
 
 module.exports = {
