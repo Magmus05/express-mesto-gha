@@ -15,6 +15,6 @@ const token = req.headers.cookie.replace('jwt=', '')
       .status(ERROR_UNAUTHORIZED)
       .send({ message: 'Необходима авторизация' });
   }
-  req.user = payload; // записываем пейлоуд в объект запроса
+  req.user = payload;// записываем пейлоуд в объект запроса
   next(); // пропускаем запрос дальше
 };

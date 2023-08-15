@@ -27,8 +27,16 @@ function createCard(req, res, next) {
 }
 
 function deleteCard(req, res, next) {
+
   Card.findById(req.params.cardId).then((card) => {
-    if (card.owner !== req.body._id)
+
+    if (card === null)
+    throw new NOT_FOUND_ERROR("id карточки не найден.");
+
+    console.log(card.owner.valueOf());
+    console.log(req.user._id);
+
+    if (card.owner.valueOf() !== req.user._id)
     throw new BAD_REQUEST_ERROR("У вас нет прав удалять чужие карточки");
       // return res
       //   .status(ERROR_CODE_BAD_REQUEST)
@@ -36,22 +44,9 @@ function deleteCard(req, res, next) {
 
         Card.findByIdAndRemove(req.params.cardId)
         .then((card) => {
-          if (!card)
-          throw new NOT_FOUND_ERROR("id не найден.");
-            // return res
-            //   .status(ERROR_CODE_NOT_FOUND)
-            //   .send({ message: "id не найден." });
           res.status(SUCCESS).send(card);
         })
-        .catch((err) => {
-          if (err.name === "CastError")
-          throw new BAD_REQUEST_ERROR("Некорректный id.");
-          //   return res
-          //     .status(ERROR_CODE_BAD_REQUEST)
-          //     .send({ message: "Некорректный id." });
-          // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-        }).catch(next);
-  });
+  }).catch(next);
 
 }
 
