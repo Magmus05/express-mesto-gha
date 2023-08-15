@@ -1,5 +1,6 @@
 /* eslint-disable */
 const router = require("express").Router();
+const auth = require('../middlewares/auth');
 const {
   getCards,
   createCard,
@@ -8,10 +9,10 @@ const {
   dislikeCard,
 } = require("../controllers/cards");
 
-router.get("/", getCards);
-router.post("/", createCard);
-router.delete("/:cardId", deleteCard);
-router.put("/:cardId/likes", likeCard);
-router.delete("/:cardId/likes", dislikeCard);
+router.get("/", auth, getCards);
+router.post("/", auth, createCard);
+router.delete("/:cardId", auth, deleteCard);
+router.put("/:cardId/likes", auth, likeCard);
+router.delete("/:cardId/likes", auth, dislikeCard);
 
 module.exports = router;
