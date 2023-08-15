@@ -28,7 +28,7 @@ function getUsers(req, res, next) {
 
 function getUserByID(req, res, next) {
   console.log(req.params);
-  User.findById(req.params._id)
+  User.findById(req.params.id)
     .orFail(new Error("NotValidId"))
     .then((user) => {
       res

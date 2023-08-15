@@ -62,20 +62,13 @@ function likeCard(req, res, next) {
     { new: true }
   )
     .then((user) => {
-      if (!user)
+
+      if (card === null)
       throw new NOT_FOUND_ERROR("id карточки не найден.");
         // return res.status(ERROR_CODE_NOT_FOUND).send({
         //   message: "id карточки не найден.",
         // });
-      res.status(CREATE).send(user);
-    })
-    .catch((err) => {
-      if (err.kind === "ObjectId")
-      throw new BAD_REQUEST_ERROR("id карточки некорректный.");
-      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
-      //     message: "id карточки некорректный.",
-      //   });
-      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+      res.status(CREATE).send(card);
     }).catch(next);
 }
 
@@ -85,22 +78,15 @@ function dislikeCard(req, res, next) {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
-    .then((user) => {
-      if (!user)
+    .then((card) => {
+      console.log(card);
+      if (card === null)
       throw new NOT_FOUND_ERROR("id карточки не найден.");
       //   return res.status(ERROR_CODE_NOT_FOUND).send({
       //     message: "id карточки не найден.",
       //   });
       // console.log(res.status);
-      res.status(SUCCESS).send(user);
-    })
-    .catch((err) => {
-      if (err.kind === "ObjectId")
-      throw new BAD_REQUEST_ERROR("id карточки некорректный.");
-      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
-      //     message: "id карточки некорректный.",
-      //   });
-      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+      res.status(SUCCESS).send(card);
     }).catch(next);
 }
 
