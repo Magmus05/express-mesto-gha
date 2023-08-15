@@ -3,6 +3,7 @@ const Card = require("../models/card");
 const {
   NOT_FOUND_ERROR,
   BAD_REQUEST_ERROR,
+  FORBIDDEN_ERROR,
 } = require("../errors/errors");
 const SUCCESS = 200;
 const CREATE = 201;
@@ -37,7 +38,7 @@ function deleteCard(req, res, next) {
     console.log(req.user._id);
 
     if (card.owner.valueOf() !== req.user._id)
-    throw new BAD_REQUEST_ERROR("У вас нет прав удалять чужие карточки");
+    throw new FORBIDDEN_ERROR("У вас нет прав удалять чужие карточки");
       // return res
       //   .status(ERROR_CODE_BAD_REQUEST)
       //   .send({ message: "У вас нет прав удалять чужие карточки" });

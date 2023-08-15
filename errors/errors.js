@@ -23,6 +23,12 @@ class CONFLICT_ERROR  extends Error {
     this.statusCode = 409;
   }
 }
+class FORBIDDEN_ERROR  extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+  }
+}
 
 
-module.exports = {NOT_FOUND_ERROR, UNAUTHORIZED_ERROR, BAD_REQUEST_ERROR, CONFLICT_ERROR};
+module.exports = { FORBIDDEN_ERROR, NOT_FOUND_ERROR, UNAUTHORIZED_ERROR, BAD_REQUEST_ERROR, CONFLICT_ERROR};
