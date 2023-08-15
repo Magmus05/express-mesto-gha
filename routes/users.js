@@ -23,7 +23,7 @@ router.post(
         password: Joi.string().required().min(8),
         name: Joi.string().min(2).max(30),
         about: Joi.string().min(2).max(30),
-        avatar: Joi.string().required().regex(new RegExp(regexLink)),
+        avatar: Joi.string().regex(new RegExp(regexLink)),
       })
       .unknown(true),
   }),
