@@ -1,6 +1,8 @@
 /* eslint-disable */
 const router = require("express").Router();
 const auth = require("../middlewares/auth");
+const regexLink =
+  /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
 const { celebrate, Joi } = require("celebrate");
 const {
   getCards,
@@ -14,16 +16,27 @@ router.get("/", auth, getCards);
 router.post(
   "/",
   celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().required().min(2).max(30),
-
-    }).unknown(true),
+    body: Joi.object()
+      .keys({
+        name: Joi.string().required().min(2).max(30),
+        link: Joi.string().required().regex(new RegExp(regexLink)),
+      })
+      .unknown(true),
   }),
   auth,
   createCard
 );
 router.delete("/:cardId", auth, deleteCard);
-router.put("/:cardId/likes", auth, likeCard);
+router.put(
+  "/:cardId/likes",
+  celebrate({
+    params: Joi.object().keys({
+      id: Joi.string().hex().length(24).required(),
+    }),
+  }),
+  auth,
+  likeCard
+);
 router.delete("/:cardId/likes", auth, dislikeCard);
 
 module.exports = router;

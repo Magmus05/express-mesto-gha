@@ -27,9 +27,8 @@ function getUsers(req, res, next) {
 }
 
 function getUserByID(req, res, next) {
-  console.log(req.params.id);
   console.log(req.params);
-  User.findById(req.params.id)
+  User.findById(req.params._id)
     .orFail(new Error("NotValidId"))
     .then((user) => {
       res
@@ -156,6 +155,31 @@ async function login(req, res, next) {
     .catch(next);
 }
 
+function currentUser(req, res, next) {
+  console.log(req.user);
+  User.findById(req.user.id)
+    .orFail(new Error("NotValidId"))
+    .then((user) => {
+      res
+        .status(SUCCESS)
+        .send(user);
+    })
+    .catch((err) => {
+      if (err.message === "NotValidId")
+        throw new NOT_FOUND_ERROR("Такой ID не существует");
+      // return res
+      //   .status(ERROR_CODE_NOT_FOUND)
+      //   .send({ message: "Такой ID не существует" });
+      if (err.name === "CastError") throw new BAD_REQUEST_ERROR("Не верный ID");
+      //   return res
+      //     .status(ERROR_CODE_BAD_REQUEST)
+      //     .send({ message: "Не верный ID111" });
+      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
+    })
+    .catch(next);
+}
+
+
 module.exports = {
   getUsers,
   getUserByID,
@@ -163,4 +187,5 @@ module.exports = {
   updateUserProfile,
   updateUserAvatar,
   login,
+  currentUser
 };
