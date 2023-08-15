@@ -3,13 +3,16 @@ const jwt = require('jsonwebtoken');
 const ERROR_UNAUTHORIZED = 401;
 const { UNAUTHORIZED_ERROR } = require("../errors/errors");
 module.exports = (req, res, next) => {
-const token = req.headers.cookie
-//replace('jwt=', '')
+
+const token = req.headers.cookie.replace('jwt=', '')
+if(!token)   return res
+.status(ERROR_UNAUTHORIZED)
+.send({ message: 'Необходима авторизация' });
   let payload;
-  console.log(token.replace('jwt=', ''));
+  console.log(token);
 
   try {
-    payload = jwt.verify(token.replace('jwt=', ''), 'cibirkulimay');
+    payload = jwt.verify(token, 'cibirkulimay');
   } catch (err) {
     return res
       .status(ERROR_UNAUTHORIZED)

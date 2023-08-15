@@ -7,7 +7,6 @@ const SUCCESS = 200;
 const CREATE = 201;
 
 function getUsers(req, res, next) {
-  console.log(req.headers);
 
   User.find({})
     .then((users) => {
