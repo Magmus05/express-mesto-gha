@@ -25,11 +25,11 @@ router.post("/users/signin", celebrate({
     password: Joi.string().required().min(8),
   }),
 }), login);
-app.use(auth);
-router.get("/users/", getUsers);
-router.get("/users/:id", getUserByID);
-router.patch("/users/me", updateUserProfile);
-router.patch("/users/me/avatar", updateUserAvatar);
+
+router.get("/users/", auth, getUsers);
+router.get("/users/:id", auth, getUserByID);
+router.patch("/users/me", auth, updateUserProfile);
+router.patch("/users/me/avatar", auth, updateUserAvatar);
 //router.get("/users/me", auth, getСurrentUser);
 
 module.exports = router;
