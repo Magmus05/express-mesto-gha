@@ -36,10 +36,10 @@ router.post(
   login
 );
 
-router.get("/", auth, getUsers);
-router.get("/:id", auth, getUserByID);
-router.patch("/me", auth, updateUserProfile);
-router.patch("/me/avatar", auth, updateUserAvatar);
-//router.get("/users/me", auth, getСurrentUser);
+router.get("/users/", auth, getUsers);
+router.get("/users/:id", auth, getUserByID);
+router.patch("/users/me", auth, updateUserProfile);
+router.patch("/users/me/avatar", auth, updateUserAvatar);
+//router.get("/users/me", auth, getUsers);
 
 module.exports = router;

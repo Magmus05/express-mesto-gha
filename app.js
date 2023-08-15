@@ -12,7 +12,7 @@ const { errors } = require('celebrate');
 
 app.use(bodyParser.json());
 
-app.use("/users", routesUsers);
+app.use("/", routesUsers);
 app.use("/cards", routesCards);
 app.use("/", (req, res) => {
   res.status(404).send({
