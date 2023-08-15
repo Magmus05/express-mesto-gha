@@ -10,6 +10,8 @@ const SUCCESS = 200;
 const CREATE = 201;
 
 function getUsers(req, res, next) {
+  console.log(req.body);
+
   User.find({})
     .then((users) => {
       res.status(SUCCESS);
@@ -19,7 +21,7 @@ function getUsers(req, res, next) {
         })
       );
     })
-    .catch(next);
+    .catch((err) => {throw new BAD_REQUEST_ERROR(`${err.message}`)}).catch(next);
 }
 
 function getUserByID(req, res, next) {
@@ -109,20 +111,23 @@ function updateUserAvatar(req, res, next) {
 }
 
 async function login(req, res, next) {
+  console.log(req.body);
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // аутентификация успешна! пользователь в переменной user
       const SECRET_KEY = "cibirkulimay";
+      console.log(user);
       const token = JWT.sign({ _id: user._id.valueOf() }, SECRET_KEY, {
         expiresIn: "7d",
       });
+      // res.clearCookie("jwt")
       res.cookie("jwt", token);
       return res
         .status(SUCCESS)
         .send({ message: "Авторизация прошла успешно" });
     })
-    .catch(next);
+    .catch((err) => {throw new BAD_REQUEST_ERROR(`${err.message}`)}).catch(next);
 
 }
 
