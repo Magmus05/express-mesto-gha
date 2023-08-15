@@ -27,13 +27,17 @@ router.post(
   createCard
 );
 router.delete("/:cardId", auth, deleteCard);
-router.put("/:cardId/likes", likeCard);
+router.put("/:cardId/likes",
+celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), likeCard);
 router.delete("/:cardId/likes",
 celebrate({
   params: Joi.object().keys({
     cardId: Joi.string().hex().length(24).required(),
   }),
-}),
-auth, auth, dislikeCard);
+}), auth, dislikeCard);
 
 module.exports = router;
