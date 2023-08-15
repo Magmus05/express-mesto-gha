@@ -156,8 +156,7 @@ async function login(req, res, next) {
 }
 
 function currentUser(req, res, next) {
-  console.log(req.user);
-  User.findById(req.user.id)
+  User.findById(req.user._id)
     .orFail(new Error("NotValidId"))
     .then((user) => {
       res
@@ -170,11 +169,6 @@ function currentUser(req, res, next) {
       // return res
       //   .status(ERROR_CODE_NOT_FOUND)
       //   .send({ message: "Такой ID не существует" });
-      if (err.name === "CastError") throw new BAD_REQUEST_ERROR("Не верный ID");
-      //   return res
-      //     .status(ERROR_CODE_BAD_REQUEST)
-      //     .send({ message: "Не верный ID111" });
-      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
     })
     .catch(next);
 }

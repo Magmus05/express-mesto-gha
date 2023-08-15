@@ -61,7 +61,7 @@ function likeCard(req, res, next) {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
-    .then((user) => {
+    .then((card) => {
 
       if (card === null)
       throw new NOT_FOUND_ERROR("id карточки не найден.");
