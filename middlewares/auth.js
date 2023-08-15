@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
 const token = req.headers.cookie.replace('jwt=', '')
   let payload;
   console.log(token);
-
+  const token2 = 'dddddddd'
   try {
     payload = jwt.verify(token, 'cibirkulimay');
   } catch (err) {
