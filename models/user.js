@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 const validator = require('validator');
 const bcrypt = require("bcrypt");
-const { UNAUTHORIZED_ERROR } = require("../errors/errors");
+const { UNAUTHORIZED_ERROR, CONFLICT_ERROR } = require("../errors/errors");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Поле "password" должно быть заполнено'],
-    select: false
+    select: false,
   },
 
 },{versionKey: false});
@@ -49,7 +49,7 @@ userSchema.path('avatar').validate((val) => {
   return urlRegex.test(val);
 }, 'Невалидный URL.');
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function (email, password, next) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
 
@@ -65,7 +65,7 @@ userSchema.statics.findUserByCredentials = function (email, password) {
 
           return user;
         });
-    });
+    }).catch(next);
 };
 
 

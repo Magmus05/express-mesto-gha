@@ -2,12 +2,15 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
-const { NOT_FOUND_ERROR, BAD_REQUEST_ERROR, CONFLICT_ERROR } = require("../errors/errors");
+const {
+  NOT_FOUND_ERROR,
+  BAD_REQUEST_ERROR,
+  CONFLICT_ERROR,
+} = require("../errors/errors");
 const SUCCESS = 200;
 const CREATE = 201;
 
 function getUsers(req, res, next) {
-
   User.find({})
     .then((users) => {
       res.status(SUCCESS);
@@ -24,10 +27,14 @@ function getUsers(req, res, next) {
 }
 
 function getUserByID(req, res, next) {
-  User.findById(req.user._id)
+  console.log(req.params.id);
+  console.log(req.params);
+  User.findById(req.params.id)
     .orFail(new Error("NotValidId"))
     .then((user) => {
-      res.status(SUCCESS).send(user);
+      res
+        .status(SUCCESS)
+        .send(user);
     })
     .catch((err) => {
       if (err.message === "NotValidId")
@@ -49,14 +56,18 @@ function createUser(req, res, next) {
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (user) {
-        throw new CONFLICT_ERROR(
-          `Пользователь с таким email уже существует`
-        );
+        throw new CONFLICT_ERROR(`Пользователь с таким email уже существует`);
       } else {
         bcrypt.hash(req.body.password, 10).then((hash) => {
           User.create({ ...req.body, password: hash })
             .then((user) => {
-              res.status(CREATE).send(user);
+              res.status(CREATE).send({
+                name: user.name,
+                about: user.about,
+                avatar: user.avatar,
+                email: user.email,
+                _id: user._id,
+              });
             })
             .catch((err) => {
               // console.log(err.name);
@@ -125,7 +136,7 @@ function updateUserAvatar(req, res, next) {
 async function login(req, res, next) {
   console.log(req.body);
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password, next)
     .then((user) => {
       // аутентификация успешна! пользователь в переменной user
       const SECRET_KEY = "cibirkulimay";

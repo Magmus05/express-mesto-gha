@@ -7,10 +7,7 @@ module.exports = (req, res, next) => {
   .status(ERROR_UNAUTHORIZED)
   .send({ message: 'Необходима авторизация' });
 const token = req.headers.cookie.replace('jwt=', '')
-
   let payload;
-  console.log(token);
-
   try {
     payload = jwt.verify(token, 'cibirkulimay');
   } catch (err) {

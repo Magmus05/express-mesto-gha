@@ -1,6 +1,7 @@
 /* eslint-disable */
 const router = require("express").Router();
 const auth = require("../middlewares/auth");
+
 const { celebrate, Joi } = require("celebrate");
 const {
   getUsers,
@@ -37,8 +38,26 @@ router.post(
 );
 
 router.get("/users/", auth, getUsers);
-router.get("/users/:id", auth, getUserByID);
-router.patch("/users/me", auth, updateUserProfile);
+router.get(
+  "/users/:id",
+  celebrate({
+    params: Joi.object()
+      .keys({
+        // id: Joi.string().required().objectId(),
+      })
+      .unknown(true),
+  }),
+  auth,
+  getUserByID
+);
+router.patch("/users/me",  celebrate({
+  body: Joi.object()
+    .keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+    })
+    .unknown(true),
+}), auth, updateUserProfile);
 router.patch("/users/me/avatar", auth, updateUserAvatar);
 //router.get("/users/me", auth, getUsers);
 
