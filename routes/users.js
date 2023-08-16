@@ -1,8 +1,7 @@
 /* eslint-disable */
 const router = require("express").Router();
 const auth = require("../middlewares/auth");
-const regexLink =
-  /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+const regexLink = /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/;
 const { celebrate, Joi } = require("celebrate");
 const {
   getUsers,
@@ -17,15 +16,13 @@ const {
 router.post(
   "/signup",
   celebrate({
-    body: Joi.object()
-      .keys({
-        email: Joi.string().required().email(),
-        password: Joi.string().required().min(8),
-        name: Joi.string().min(2).max(30),
-        about: Joi.string().min(2).max(30),
-        avatar: Joi.string().regex(new RegExp(regexLink)),
-      })
-      .unknown(true),
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().regex(new RegExp(regexLink)),
+    }),
   }),
   createUser
 );
@@ -44,19 +41,18 @@ router.get("/users/", auth, getUsers);
 router.get("/users/me", auth, currentUser);
 router.patch(
   "/users/me",
-  celebrate({
-    body: Joi.object()
-      .keys({
-        name: Joi.string().min(2).max(30),
-        about: Joi.string().min(2).max(30),
-      })
-      .unknown(true),
-  }),
   auth,
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+    }),
+  }),
   updateUserProfile
 );
 router.patch(
   "/users/me/avatar",
+  auth,
   celebrate({
     body: Joi.object()
       .keys({
@@ -64,18 +60,17 @@ router.patch(
       })
       .unknown(true),
   }),
-  auth,
   updateUserAvatar
 );
 
 router.get(
   "/users/:id",
+  auth,
   celebrate({
     params: Joi.object().keys({
       id: Joi.string().hex().length(24).required(),
     }),
   }),
-  auth,
   getUserByID
 );
 

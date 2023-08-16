@@ -1,10 +1,8 @@
 /* eslint-disable */
 const Card = require("../models/card");
-const {
-  NOT_FOUND_ERROR,
-  BAD_REQUEST_ERROR,
-  FORBIDDEN_ERROR,
-} = require("../errors/errors");
+const NOT_FOUND_ERROR = require("../errors/NotFoundError");
+const BAD_REQUEST_ERROR = require("../errors/BadRequestError");
+const FORBIDDEN_ERROR = require("../errors/ForbiddenError");
 const SUCCESS = 200;
 const CREATE = 201;
 
@@ -18,13 +16,10 @@ function createCard(req, res, next) {
   Card.create({ ...req.body, owner: req.user._id })
     .then((user) => res.status(CREATE).send(user))
     .catch((err) => {
-      if (err.name === "ValidationError")
-      throw new BAD_REQUEST_ERROR(`${err.message}`);
-      //   return res.status(ERROR_CODE_BAD_REQUEST).send({
-      //     message: `${err.message}`,
-      //   });
-      // res.status(ERROR_CODE_INTERNAL_SERVER_ERROR).send(err.message);
-    }).catch(next);
+      if (err.name === "ValidationError"){
+      next(new BAD_REQUEST_ERROR(`${err.message}`))
+    }else{next(err)}
+    });
 }
 
 function deleteCard(req, res, next) {
@@ -46,7 +41,7 @@ function deleteCard(req, res, next) {
         Card.findByIdAndRemove(req.params.cardId)
         .then((card) => {
           res.status(SUCCESS).send(card);
-        })
+        }).catch(next)
   }).catch(next);
 
 }
