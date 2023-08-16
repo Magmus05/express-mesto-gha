@@ -23,7 +23,7 @@ function getUsers(req, res, next) {
 function getUserByID(req, res, next) {
   console.log(req.params);
   User.findById(req.params.id)
-    .orFail(() => new NOT_FOUND_ERROR("Такой ID не существует"))
+    .orFail(() => next(new NOT_FOUND_ERROR("Такой ID не существует")))
     .then((user) => {
       res.status(SUCCESS).send(user);
     })
