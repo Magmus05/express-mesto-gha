@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 const NOT_FOUND_ERROR = require("../errors/NotFoundError");
 const BAD_REQUEST_ERROR = require("../errors/BadRequestError");
-const CONFLICT_ERROR = require("../errors/ConflictError");
+const CONFLICT_ERROR = require('../errors/ConflictError');
 const SUCCESS = 200;
 const CREATE = 201;
 
