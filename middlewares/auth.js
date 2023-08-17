@@ -1,4 +1,3 @@
-/* eslint-disable */
 const jwt = require("jsonwebtoken");
 const UNAUTHORIZED_ERROR = require("../errors/UnauthorizedError");
 module.exports = (req, res, next) => {

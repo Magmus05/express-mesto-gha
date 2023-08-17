@@ -1,4 +1,3 @@
-/* eslint-disable */
 const router = require("express").Router();
 const auth = require("../middlewares/auth");
 const regexLink = /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/;
@@ -58,7 +57,6 @@ router.patch(
       .keys({
         avatar: Joi.string().required().regex(new RegExp(regexLink)),
       })
-      .unknown(true),
   }),
   updateUserAvatar
 );

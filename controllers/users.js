@@ -1,4 +1,3 @@
-/* eslint-disable */
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
@@ -28,7 +27,7 @@ function getUserByID(req, res, next) {
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
-      next(new BAD_REQUEST_ERROR("Не верный ID"));
+      next(err);
     });
 }
 
@@ -57,7 +56,7 @@ function createUser(req, res, next) {
           next(err);
         }
       });
-  });
+  }).catch(next)
 }
 
 function updateUserProfile(req, res, next) {
@@ -88,9 +87,6 @@ function updateUserAvatar(req, res, next) {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      if (!req.body.avatar) {
-        return Promise.reject(res.status);
-      }
       res.status(SUCCESS).send(user);
     })
     .catch((err) => {
